@@ -1,0 +1,9 @@
+{
+  "name": "halloween-musikwunsch-app",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {"dev":"vercel dev", "build":"node -e \"console.log('Static app ready')\"", "test":"node --test"},
+  "dependencies": {"@upstash/redis":"^1.35.0"},
+  "engines": {"node":">=20"}
+}

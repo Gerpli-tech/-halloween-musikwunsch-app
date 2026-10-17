@@ -1,0 +1,1 @@
+{"version":2,"rewrites":[{"source":"/","destination":"/public/index.html"},{"source":"/manifest.json","destination":"/public/manifest.json"}]}
