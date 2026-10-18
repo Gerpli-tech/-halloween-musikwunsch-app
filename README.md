@@ -1,25 +1,23 @@
-# 🎃 Halloween Musikwunsch-App
+# 🎃 Halloween-Musikwunsch-App
 
-Die Gäste suchen ihren Song, geben einen Namen ein und der Wunsch wird **direkt** in deine private Spotify-Playlist eingetragen. Alle Gäste sehen dieselbe Wunschliste. Der Veranstalter verbindet Spotify nur einmal, Gäste brauchen **kein Spotify-Konto**.
+Öffentliche Gästeseite mit Spotify-Suche und direktem Hinzufügen zur Playlist. Gäste brauchen keinen Spotify-Account; der Veranstalter meldet sich einmalig bei Spotify an. Speicherung und Missbrauchsschutz über Upstash Redis.
 
-## Einmalige Einrichtung
+## Einrichtung mit GitHub, Vercel und Spotify
 
-1. Lade alle Dateien dieses Projekts in ein **privates** GitHub-Repository hoch (alle Dateien und Unterordner, nicht nur index.html).
-2. Öffne [vercel.com](https://vercel.com/), melde dich mit GitHub an, wähle `Add New > Project`, importiere das Repository. Framework: `Other`, Build Command leer lassen, Output Directory leer lassen.
-3. Erstelle im Vercel-Projekt unter **Storage** / **Marketplace** eine **Upstash Redis**-Datenbank und verbinde sie mit dem Projekt. Falls die Variablen `UPSTASH_REDIS_REST_URL` und `UPSTASH_REDIS_REST_TOKEN` nicht automatisch angelegt werden, setze sie mit den REST-Werten von Upstash. Achte darauf, dass das Redis-REST-Interface für `@upstash/redis` verfügbar ist.
-4. Öffne [developer.spotify.com/dashboard](https://developer.spotify.com/dashboard), lege eine App an und hinterlege als Redirect URI genau `https://DEINE-APP.vercel.app/api/auth?action=callback`. In der Spotify-Entwickler-App die korrekte Web API-Integration auswählen und eventuelle Spotify-Entwicklermodus-Beschränkungen beachten.
-5. Setze in Vercel unter **Settings > Environment Variables**: `SPOTIFY_CLIENT_ID`, `SPOTIFY_CLIENT_SECRET`, `APP_URL` (ohne Slash am Ende), `ADMIN_PASSWORD` und `SESSION_SECRET` (mindestens 32 zufällige Zeichen). Die Beispielwerte aus `.env.example` nicht unverändert verwenden. **Nie Spotify Secret oder Passwort in GitHub hochladen.**
-6. Das Projekt auf Vercel erneut bereitstellen (`Deployments > Redeploy`). Öffne die Vercel-Webadresse, melde dich unten als Veranstalter an und tippe auf **Spotify-Konto verbinden**. Spotify-Login bestätigen.
-7. Jetzt kannst du den Vercel-Link an alle Gäste schicken, gerne bereits Tage vor der Party.
+1. Den **Inhalt** dieses ZIP-Pakets in ein GitHub-Repository hochladen, sodass `api`, `lib`, `public`, `package.json`, `vercel.json` direkt im Stammverzeichnis liegen. Alte Dateien gleichen Namens ersetzen. Keine Geheimnisse hochladen.
+2. Das Repository unter https://vercel.com/new importieren. Vercel erkennt die Funktionen im Ordner `api`. Framework Preset: `Other`; keine eigene Build- oder Output-Directory-Einstellung setzen.
+3. Über Vercel Storage / Marketplace eine Upstash-Redis-Datenbank verbinden. Benötigte Variablen sind `UPSTASH_REDIS_REST_URL` und `UPSTASH_REDIS_REST_TOKEN`.
+4. In https://developer.spotify.com/dashboard eine Web-API-App anlegen. In deren Redirect-URI-Einstellungen exakt `https://DEINE-APP.vercel.app/api/auth?action=callback` eintragen. Die App-URL muss schon bekannt sein; Vercel-Deployment ggf. zuerst ausführen.
+5. Unter Vercel → Project → Settings → Environment Variables diese Werte ergänzen: `SPOTIFY_CLIENT_ID`, `SPOTIFY_CLIENT_SECRET`, `APP_URL` (exakte HTTPS-Adresse **ohne Slash**), `ADMIN_PASSWORD` (eigenes starkes Passwort), `SESSION_SECRET` (mindestens 32 zufällige Zeichen). Die Redis-Werte aus Schritt 3 müssen ebenfalls vorhanden sein. Für Production auswählen.
+6. Vercel → Deployments → Redeploy. `/api/health` zeigt mit `{"ready":true}`, dass die Variablen vorhanden sind; dies garantiert noch keine Spotify-Anmeldung.
+7. App öffnen → Veranstalter-Bereich → Passwort → Spotify-Konto verbinden → im Spotify-Dialog bestätigen. Wieder in der App im Veranstalter-Bereich die **richtige Playlist-URL** einfügen und speichern.
+8. Song selbst testen. Dann den Vercel-Link an Gäste verschicken.
 
 ## Hinweise
 
-- Spotify Premium ist vorhanden, aber nicht für die Eingabe von Gästewünschen erforderlich.
-- Spotify kann bei neuen Apps Testnutzer-Beschränkungen haben. Wenn die Playlist-Verbindung nicht klappt, füge den verwendeten Spotify-Account in den Spotify-App-Einstellungen zu den berechtigten Testnutzern hinzu.
-- Ein gespeicherter Wunsch wird erst nach erfolgreichem Spotify-Playlist-Update angezeigt.
-- Um die Playlist zu öffnen, unten als Veranstalter anmelden. Gäste bekommen keinen Zugriff auf das Passwort.
-- Serverloses Hosting erfordert die Redis-Datenbank: GitHub Pages allein genügt **nicht**.
-
-## Sicherheit
-
-Die Website nutzt HttpOnly-Admin-Cookies und hält Spotify-Tokens serverseitig in Redis. Keine Zugangsdaten ins Repository hochladen. Die Seite hat ein einfaches IP-Ratenlimit und überprüft Songs serverseitig. Für einen großen öffentlichen Einsatz wären zusätzlich Captcha und Transaktionssperren gegen zeitgleiche Doppeleinträge sinnvoll.
+- Spotify ändert gelegentlich Limits und Voraussetzungen seiner Entwickler-API. Für neue Apps können Premium und Testnutzer-Beschränkungen gelten. Die API-Zugriffsrechte müssen für den Betreiber verfügbar sein.
+- Bestehende Playlist wird nicht ersetzt. Neue gewünschte Songs werden hinzugefügt; doppelte App-Wünsche werden blockiert.
+- Die Liste kann bis zu 200 Wünsche in der App anzeigen; die Spotify-Playlist enthält mehr, falls vorhanden.
+- Für das Deployment werden GitHub, Vercel, Upstash Redis und eine Spotify Developer App benötigt. **Spotify Premium allein genügt nicht.**
+- App-Zugangsdaten bleiben ausschließlich in Vercel-Umgebungsvariablen. Das Repository muss keine Geheimnisse enthalten.
+- Bei Änderungen der Spotify-Playlist außerhalb der App erkennt die Duplikatsperre diese externen Lieder nicht automatisch.
